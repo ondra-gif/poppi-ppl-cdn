@@ -803,25 +803,32 @@
     return /Adresa|Doru\u010den\u00ed na adresu/i.test(radioLabel(r)) && !BOX_RE.test(radioLabel(r));
   }
 
-  function optionWrapper(r) {
-    var group = r.closest('[data-hook*="DeliveryOptionsPicker__deliveryRadioGroup"]');
+  function optionsContainer(radios) {
+    var el = radios[0].parentElement;
+    while (el && el.querySelectorAll('input[type=radio]').length < radios.length) {
+      el = el.parentElement;
+    }
+    return el;
+  }
+
+  function optionWrapper(r, container) {
     var el = r;
-    while (el && el.parentElement && el.parentElement !== group) el = el.parentElement;
-    return el && el.parentElement === group ? el : null;
+    while (el && el.parentElement && el.parentElement !== container) el = el.parentElement;
+    return el && el.parentElement === container ? el : null;
   }
 
   // Wix lists rates cheapest first; keep address delivery on top and preselected.
   function arrangeDelivery() {
     var radios = deliveryRadios();
     if (!radios.length) return;
-    var group = radios[0].closest('[data-hook*="DeliveryOptionsPicker__deliveryRadioGroup"]');
-    if (group && group.style.display !== "flex") {
+    var group = optionsContainer(radios);
+    if (group && getComputedStyle(group).display !== "flex") {
       group.style.display = "flex";
       group.style.flexDirection = "column";
     }
     var addr = null;
     for (var i = 0; i < radios.length; i++) {
-      var w = optionWrapper(radios[i]);
+      var w = optionWrapper(radios[i], group);
       if (!w) continue;
       var isAddr = isAddressOption(radios[i]);
       w.style.order = isAddr ? "-1" : "0";
